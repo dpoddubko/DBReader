@@ -29,8 +29,6 @@ public class FileManager {
             myOutput = new FileOutputStream(out);
             IOUtils.copy(myInput, myOutput);
             myOutput.flush();
-            myOutput.close();
-            myInput.close();
         } catch (IOException e) {
             e.printStackTrace();
         }finally {

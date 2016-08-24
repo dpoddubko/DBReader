@@ -2,19 +2,22 @@ package com.dpoddubko.dbreader;
 
 import android.app.Fragment;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
-import java.util.List;
+import java.io.IOException;
 
 public class MainFragment extends Fragment {
 
-    private DatabasesList mBasesList;
+    private AssetManager mAssets;
+    private String[] baseNames;
+    private static final String BASES_FOLDER = "all_databases";
 
     public static MainFragment newInstance() {
         return new MainFragment();
@@ -23,7 +26,8 @@ public class MainFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mBasesList = new DatabasesList(getActivity());
+        mAssets = getActivity().getAssets();
+        baseNames = getBaseNames();
     }
 
     @Override
@@ -31,61 +35,30 @@ public class MainFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment, container,
                 false);
-        RecyclerView recyclerView = (RecyclerView) view
-                .findViewById(R.id.recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        recyclerView.setAdapter(new BaseAdapter(mBasesList.getBases()));
+        ListView baseList = (ListView) view.findViewById(R.id.baseList);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
+                android.R.layout.simple_list_item_1, baseNames);
+        baseList.setAdapter(adapter);
+        baseList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                String baseName = baseNames[position];
+                String assetsPath = BASES_FOLDER + "/" + baseName;
+                Intent intent = BaseActivity
+                        .newIntent(getActivity(), assetsPath, baseName);
+                startActivity(intent);
+            }
+        });
         return view;
     }
 
-    private class BaseHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        private Button mButton;
-        private Database mBase;
-
-        public BaseHolder(LayoutInflater inflater, ViewGroup container) {
-            super(inflater.inflate(R.layout.button, container,
-                    false));
-            mButton = (Button) itemView.findViewById(R.id.button);
-            mButton.setOnClickListener(this);
-        }
-
-        public void bindBase(Database base) {
-            mBase = base;
-            mButton.setText(mBase.getButtonName());
-        }
-
-        @Override
-        public void onClick(View view) {
-            Intent intent = BaseActivity
-                    .newIntent(getActivity(), mBase.getAssetPath(), mBase.getBaseName());
-            startActivity(intent);
+    public String[] getBaseNames() {
+        try {
+            return mAssets.list(BASES_FOLDER);
+        } catch (IOException ioe) {
+            throw new RuntimeException("Could not list assets", ioe);
         }
     }
-
-    private class BaseAdapter extends RecyclerView.Adapter<BaseHolder> {
-        private List<Database> mBases;
-
-        public BaseAdapter(List<Database> bases) {
-            mBases = bases;
-        }
-
-        @Override
-        public BaseHolder onCreateViewHolder
-                (ViewGroup parent, int viewType) {
-            LayoutInflater inflater = LayoutInflater.from(getActivity());
-            return new BaseHolder(inflater, parent);
-        }
-
-        @Override
-        public void onBindViewHolder(BaseHolder baseHolder, int position) {
-            Database base = mBases.get(position);
-            baseHolder.bindBase(base);
-        }
-
-        @Override
-        public int getItemCount() {
-            return mBases.size();
-        }
-    }
-
 }

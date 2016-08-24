@@ -10,8 +10,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 public class DisplayManager {
-    private TableLayout tl;
-    private ScrollView sv;
+    private LinearLayout ll;
 
     public String getTables(Cursor c) {
         if (c.moveToFirst()) {
@@ -29,50 +28,39 @@ public class DisplayManager {
             return "Query is not correct!";
     }
 
-    public void displayTable(Context context, Cursor cursor, LinearLayout ll)
+    public void displayTitle(Context context, Cursor cursor, LinearLayout ll)
             throws RuntimeException {
-        tl = new TableLayout(context);
-        tl.setStretchAllColumns(true);
-        tl.setShrinkAllColumns(true);
-        tl.setPadding(25, 25, 25, 25);
-        sv = new ScrollView(context);
-        sv.addView(tl);
-        TableRow tableRow;
-        TextView textView;
         try {
             if (cursor.moveToFirst()) {
-                int numCol = cursor.getColumnCount();
-                String[] names = cursor.getColumnNames();
-                tableRow = new TableRow(context);
+                final String[] names = cursor.getColumnNames();
+                ll.setBackgroundResource(R.color.colorCell);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                lp.width = 0;
+                lp.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+                lp.weight = 1;
 
-                for (int j = 0; j < numCol; j++) {
-                    textView = new TextView(context);
-                    textView.setBackgroundColor(R.color.colorAccent);
-                    textView.setText(names[j]);
-                    tableRow.addView(textView);
+                for (int i = 0; i < cursor.getColumnCount(); i++) {
+                    TextView tv = new TextView(context);
+                    tv.setPadding(15, 0, 15, 0);
+                    tv.setLayoutParams(lp);
+                    tv.setSingleLine(true);
+                    tv.setBackgroundResource(R.drawable.cell_shape);
+                    tv.setText(names[i]);
+                    ll.addView(tv);
                 }
-                tl.addView(tableRow);
-                do {
-                    tableRow = new TableRow(context);
-                    for (int j = 0; j < numCol; j++) {
-                        textView = new TextView(context);
-                        textView.setText(cursor.getString(j));
-                        tableRow.addView(textView);
-                    }
-                    tl.addView(tableRow);
-                } while (cursor.moveToNext());
-                cursor.close();
-                ll.addView(sv);
             }
         } catch (SQLiteReadOnlyDatabaseException e) {
             throw new RuntimeException("Attempt to change database", e);
         }
 
     }
-    public void clearView(){
-        if (tl != null) {
-            sv.removeAllViews();
-            tl.removeAllViews();
+    public void setLL(LinearLayout ll) {
+        this.ll = ll;
+    }
+
+    public void clearView() {
+        if (ll != null) {
+            ll.removeAllViews();
         }
     }
 }
