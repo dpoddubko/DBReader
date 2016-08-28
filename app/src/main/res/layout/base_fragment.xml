@@ -48,12 +48,6 @@
         android:layout_gravity="center_horizontal"
         android:text="run query"/>
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                  android:id="@+id/table_title"
-                  android:layout_width="fill_parent"
-                  android:layout_height = "20dp"
-                  android:orientation="horizontal"/>
-
       <ListView android:id="@+id/list_data"
               android:layout_width="match_parent"
               android:layout_height = "wrap_content"
