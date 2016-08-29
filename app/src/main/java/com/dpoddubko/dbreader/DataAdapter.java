@@ -17,13 +17,16 @@ public class DataAdapter extends BaseAdapter {
     private final Context mContext;
     private int countRow;
     private int countCol;
-    private ViewHolder holder;
 
-    public DataAdapter(Context context, Cursor cursor) throws SQLiteReadOnlyDatabaseException {
+    public DataAdapter(Context context, Cursor cursor) throws RuntimeException {
         mContext = context;
         mCursor = cursor;
-        countRow = mCursor.getCount() + 1;
-        countCol = mCursor.getColumnCount();
+        try {
+            countRow = mCursor.getCount() + 1;
+            countCol = mCursor.getColumnCount();
+        } catch (SQLiteReadOnlyDatabaseException e) {
+            throw new RuntimeException("Attempt to change database", e);
+        }
     }
 
     @Override
@@ -41,7 +44,7 @@ public class DataAdapter extends BaseAdapter {
         return position;
     }
 
-    class ViewHolder {
+    static class ViewHolder {
         TextView[] myTextViews;
     }
 
@@ -67,15 +70,17 @@ public class DataAdapter extends BaseAdapter {
         }
         if (position == 0) {
             for (int i = 0; i < countCol; i++) {
-                holder.myTextViews[i].setBackgroundResource(R.color.colorCell);
-                holder.myTextViews[i].setText(mCursor.getColumnName(i));
+                TextView view = holder.myTextViews[i];
+                view.setBackgroundResource(R.color.colorCell);
+                view.setText(mCursor.getColumnName(i));
             }
         } else {
             mCursor.moveToPosition(position - 1);
             for (int i = 0; i < countCol; i++) {
-                holder.myTextViews[i].setBackgroundColor(Color.WHITE);
-                holder.myTextViews[i].setBackgroundResource(R.drawable.cell_shape);
-                holder.myTextViews[i].setText(mCursor.getString(mCursor.getColumnIndex(mCursor.getColumnName(i))));
+                TextView view = holder.myTextViews[i];
+                view.setBackgroundColor(Color.WHITE);
+                view.setBackgroundResource(R.drawable.cell_shape);
+                view.setText(mCursor.getString(mCursor.getColumnIndex(mCursor.getColumnName(i))));
             }
         }
         return convertView;
